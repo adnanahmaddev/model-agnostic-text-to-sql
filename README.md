@@ -143,10 +143,28 @@ PYTHONPATH=. pytest -v
 
 This repository includes a custom **Plugin & Skill** wrapper for Antigravity-supported IDE environments.
 
-### Local Installation
-To expose this skill to local workspace agents:
-1. Copy or symlink the `plugins/text-to-sql-plugin` directory to your local configuration folder:
+### 1. Global Installation (IDE-wide)
+To expose this skill to all local workspace agents globally:
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/adnanahmaddev/model-agnostic-text-to-sql.git
+   ```
+2. Copy or symlink the `plugins/text-to-sql-plugin` directory to your local configuration folder:
    ```bash
    ln -s "$(pwd)/plugins/text-to-sql-plugin" ~/.gemini/config/plugins/text-to-sql-plugin
    ```
-2. Alternatively, copy the skill folder directly into your workspace repository under `.agents/skills/text-to-sql/`.
+
+### 2. Repository-level Installation (Recommended for Teams)
+If you want to commit the skill configuration directly into your project repository:
+1. Create a directory `.agents/skills/text-to-sql/` inside your target project repository.
+2. Download or copy the [SKILL.md](plugins/text-to-sql-plugin/skills/text-to-sql/SKILL.md) file directly into that directory:
+   ```bash
+   mkdir -p .agents/skills/text-to-sql
+   curl -o .agents/skills/text-to-sql/SKILL.md https://raw.githubusercontent.com/adnanahmaddev/model-agnostic-text-to-sql/main/plugins/text-to-sql-plugin/skills/text-to-sql/SKILL.md
+   ```
+3. Register it in your repository's local `AGENTS.md` file:
+   ```markdown
+   | Skill | Path | When To Use |
+   |---|---|---|
+   | `text-to-sql` | `.agents/skills/text-to-sql/` | Translate natural language queries into SQL and query the database |
+   ```
