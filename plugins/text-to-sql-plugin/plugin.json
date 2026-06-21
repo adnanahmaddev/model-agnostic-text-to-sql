@@ -1,0 +1,12 @@
+{
+  "name": "text-to-sql-plugin",
+  "version": "1.0.0",
+  "description": "Model-agnostic and database-agnostic Text-to-SQL tool integrated with Azure Database.",
+  "author": {
+    "name": "Adnan Ahmad"
+  },
+  "license": "Apache-2.0",
+  "skills": [
+    "text-to-sql"
+  ]
+}
