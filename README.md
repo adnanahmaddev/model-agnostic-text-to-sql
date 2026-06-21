@@ -1,4 +1,4 @@
-# Text-to-SQL
+# Model-Agnostic Text-to-SQL
 
 A production-grade, model-agnostic, and database-agnostic Python library that translates natural language queries into safe SQL statements and executes them against a database.
 
@@ -12,8 +12,20 @@ A production-grade, model-agnostic, and database-agnostic Python library that tr
 
 ## Installation
 
+You can install the stable release directly from [PyPI](https://pypi.org/project/model-agnostic-text-to-sql/):
+
 ```bash
-# Clone the repository and install in editable mode
+pip install model-agnostic-text-to-sql
+```
+
+For local development or installing from source:
+
+```bash
+# Clone the repository
+git clone https://github.com/adnanahmaddev/model-agnostic-text-to-sql.git
+cd model-agnostic-text-to-sql
+
+# Install in editable mode
 pip install -e .
 ```
 
