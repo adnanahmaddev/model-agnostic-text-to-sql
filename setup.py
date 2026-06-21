@@ -21,4 +21,9 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.8",
+    entry_points={
+        "console_scripts": [
+            "text-to-sql-query=text_to_sql.cli:main",
+        ],
+    },
 )

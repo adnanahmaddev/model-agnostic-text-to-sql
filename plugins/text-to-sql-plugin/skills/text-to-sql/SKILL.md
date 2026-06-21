@@ -10,7 +10,10 @@ Use this skill when you want to translate a natural language query into a databa
 
 ## Prerequisites
 1. **VPN**: Ensure you are connected to the corporate VPN.
-2. **Environment**: Ensure a python environment with required database drivers (`pyodbc`, `sqlalchemy`) is active.
+2. **Installation**: Ensure the package is installed:
+   ```bash
+   pip install model-agnostic-text-to-sql
+   ```
 
 ## Core Rules
 - **Schema Discovery**: First run the `get-schema` command to inspect table structures, columns, and types before writing your SQL query.
@@ -19,25 +22,25 @@ Use this skill when you want to translate a natural language query into a databa
 
 ## Commands
 
-For running these commands, determine the path to the active python interpreter (e.g. `python` or virtualenv path) and run:
+Execute these commands directly using the global command-line tool `text-to-sql-query` (or `python -m text_to_sql.cli` or `.venv/bin/text-to-sql-query` when running in virtual environments):
 
 ### 1. Retrieve Database Schema
 ```bash
-python <skill-dir>/scripts/query_db.py get-schema
+text-to-sql-query get-schema
 ```
 
 ### 2. Validate Safety of Query
 ```bash
-python <skill-dir>/scripts/query_db.py validate "YOUR SQL QUERY"
+text-to-sql-query validate "YOUR SQL QUERY"
 ```
 
 ### 3. Execute Query
 ```bash
-python <skill-dir>/scripts/query_db.py execute "YOUR SQL QUERY"
+text-to-sql-query execute "YOUR SQL QUERY"
 ```
 Or to return JSON:
 ```bash
-python <skill-dir>/scripts/query_db.py execute "YOUR SQL QUERY" --json
+text-to-sql-query execute "YOUR SQL QUERY" --json
 ```
 
 ## Workflow Guide
