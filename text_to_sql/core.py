@@ -1,15 +1,17 @@
 from typing import Callable
-from text_to_sql.adapters import DatabaseAdapter
+from text_to_sql.adapters import DatabaseAdapter, SQLiteAdapter, SQLAlchemyAdapter
 from text_to_sql.safety import SafetyValidator
 from text_to_sql.prompts import PromptBuilder
 
 class TextToSQL:
     def __init__(
         self,
-        adapter: DatabaseAdapter,
-        llm_callback: Callable[[str], str],
+        adapter: DatabaseAdapter = None,
+        llm_callback: Callable[[str], str] = None,
         safety_validator: SafetyValidator = None,
-        prompt_builder: PromptBuilder = None
+        prompt_builder: PromptBuilder = None,
+        db_uri: str = None,
+        schema: str = None
     ):
         """
         Initialize the TextToSQL manager.
@@ -18,7 +20,24 @@ class TextToSQL:
         :param llm_callback: Function that takes a prompt string and returns the LLM response string.
         :param safety_validator: Custom SafetyValidator. Defaults to read-only validator if None.
         :param prompt_builder: Custom PromptBuilder. Defaults to standard builder if None.
+        :param db_uri: Optional database connection string to automatically initialize the adapter.
+        :param schema: Optional database schema name (for SQLAlchemyAdapter reflection).
         """
+        if adapter is None:
+            if not db_uri:
+                raise ValueError("Either 'adapter' or 'db_uri' must be provided.")
+            
+            if db_uri.startswith("sqlite:///"):
+                db_path = db_uri[10:]
+                adapter = SQLiteAdapter(db_path)
+            elif db_uri.startswith("sqlite://"):
+                db_path = db_uri[9:]
+                adapter = SQLiteAdapter(db_path)
+            elif db_uri.endswith(".db") or ("/" not in db_uri and "\\" not in db_uri and "." in db_uri and "=" not in db_uri and ";" not in db_uri):
+                adapter = SQLiteAdapter(db_uri)
+            else:
+                adapter = SQLAlchemyAdapter(db_uri, schema=schema)
+
         self.adapter = adapter
         self.llm_call = llm_callback
         self.safety_validator = safety_validator if safety_validator is not None else SafetyValidator()
@@ -32,6 +51,9 @@ class TextToSQL:
         :param user_query: Natural language query.
         :return: Execution results dictionary.
         """
+        if not self.llm_call:
+            raise ValueError("An llm_callback must be provided to perform query translations.")
+
         # 1. Reflect database schema
         schema = self.adapter.get_schema()
         

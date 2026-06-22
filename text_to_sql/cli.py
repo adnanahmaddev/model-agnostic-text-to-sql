@@ -1,50 +1,35 @@
 import sys
 import os
 import argparse
-import struct
 import json
 
-from text_to_sql.adapters import SQLAlchemyAdapter
+from text_to_sql.core import TextToSQL
 from text_to_sql.safety import SafetyValidator
 
-# SQL Server credentials setup
-from azure.identity import DefaultAzureCredential
-from sqlalchemy import create_engine
-
-def get_engine():
-    # Retrieve Azure AD Token
-    credential = DefaultAzureCredential()
-    token_obj = credential.get_token("https://database.windows.net/.default")
-    token_bytes = token_obj.token.encode("utf-16-le")
-    
-    driver = "ODBC Driver 17 for SQL Server"
-    server = "fastcrib-dev-sql-001.database.windows.net,1433"
-    database = "fastcrib-dev-sqldb-001"
-    
-    conn_str = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
-    
-    SQL_COPT_SS_ACCESS_TOKEN = 1256
-    packed_token = struct.pack("=i", len(token_bytes)) + token_bytes
-    
-    engine = create_engine(
-        f"mssql+pyodbc:///?odbc_connect={conn_str}",
-        connect_args={"attrs_before": {SQL_COPT_SS_ACCESS_TOKEN: packed_token}}
-    )
-    return engine
-
 def main():
-    parser = argparse.ArgumentParser(description="Text-to-SQL Azure DB interface.")
+    # Define a parent parser for arguments shared by subcommands that need DB access
+    db_parser = argparse.ArgumentParser(add_help=False)
+    db_parser.add_argument(
+        "--db-uri", "-d",
+        help="Database connection URI. Can also be set via DATABASE_URL environment variable."
+    )
+    db_parser.add_argument(
+        "--schema", "-s",
+        help="Optional database schema to reflect (e.g. for SQLAlchemyAdapter)."
+    )
+
+    parser = argparse.ArgumentParser(description="Text-to-SQL DB interface.")
     subparsers = parser.add_subparsers(dest="command", required=True)
     
     # get-schema command
-    subparsers.add_parser("get-schema", help="Reflect database schema.")
+    subparsers.add_parser("get-schema", parents=[db_parser], help="Reflect database schema.")
     
     # validate command
     val_parser = subparsers.add_parser("validate", help="Validate safety rules on SQL query.")
     val_parser.add_argument("sql", help="The raw SQL query to validate.")
     
     # execute command
-    exec_parser = subparsers.add_parser("execute", help="Sanitize, validate, and run SQL query.")
+    exec_parser = subparsers.add_parser("execute", parents=[db_parser], help="Sanitize, validate, and run SQL query.")
     exec_parser.add_argument("sql", help="The raw SQL query to run.")
     exec_parser.add_argument("--json", action="store_true", help="Output results in raw JSON format.")
     
@@ -52,9 +37,11 @@ def main():
     
     if args.command == "get-schema":
         try:
-            engine = get_engine()
-            adapter = SQLAlchemyAdapter(engine, schema="awo")
-            schema = adapter.get_schema()
+            db_uri = args.db_uri or os.environ.get("DATABASE_URL")
+            if not db_uri:
+                raise ValueError("Database connection string must be provided via --db-uri or the DATABASE_URL environment variable.")
+            translator = TextToSQL(db_uri=db_uri, schema=args.schema)
+            schema = translator.adapter.get_schema()
             print(schema)
         except Exception as e:
             print(f"Error fetching schema: {e}", file=sys.stderr)
@@ -81,9 +68,11 @@ def main():
             
         try:
             # 2. Connect & Execute
-            engine = get_engine()
-            adapter = SQLAlchemyAdapter(engine, schema="awo")
-            result = adapter.execute_query(clean_sql)
+            db_uri = args.db_uri or os.environ.get("DATABASE_URL")
+            if not db_uri:
+                raise ValueError("Database connection string must be provided via --db-uri or the DATABASE_URL environment variable.")
+            translator = TextToSQL(db_uri=db_uri, schema=args.schema)
+            result = translator.adapter.execute_query(clean_sql)
             
             if not result["success"]:
                 print(f"Query execution failed: {result.get('error')}", file=sys.stderr)

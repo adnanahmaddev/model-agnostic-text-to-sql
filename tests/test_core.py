@@ -36,6 +36,32 @@ def test_core_translation_and_execution(temp_db):
     assert "prompt" in result
     assert result["prompt"] == received_prompts[0]
 
+def test_core_db_uri_initialization(temp_db):
+    received_prompts = []
+    def mock_llm(prompt: str) -> str:
+        received_prompts.append(prompt)
+        return "SELECT title, price FROM products WHERE price > 20.0;"
+        
+    # Initialize using db_uri
+    translator = TextToSQL(db_uri=f"sqlite:///{temp_db}", llm_callback=mock_llm)
+    result = translator.query("Get products costing more than 20 dollars")
+    
+    assert result["success"] is True
+    assert isinstance(translator.adapter, SQLiteAdapter)
+    assert result["columns"] == ["title", "price"]
+    assert result["data"] == [{"title": "Gizmo", "price": 29.99}]
+
+def test_core_missing_llm_callback(temp_db):
+    translator = TextToSQL(db_uri=f"sqlite:///{temp_db}")
+    with pytest.raises(ValueError, match="An llm_callback must be provided"):
+        translator.query("Any query")
+
+def test_core_missing_db():
+    def mock_llm(prompt: str) -> str:
+        return "SELECT 1;"
+    with pytest.raises(ValueError, match="Either 'adapter' or 'db_uri' must be provided"):
+        TextToSQL(llm_callback=mock_llm)
+
 def test_core_custom_prompt_builder(temp_db):
     adapter = SQLiteAdapter(temp_db)
     

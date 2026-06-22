@@ -1,10 +1,10 @@
-# Model-Agnostic Text-to-SQL
+# Harness-Agnostic Text-to-SQL
 
-A production-grade, model-agnostic, and database-agnostic Python library that translates natural language queries into safe SQL statements and executes them against a database.
+A production-grade, IDE/agent-harness agnostic, and database-agnostic Python library that translates natural language queries into safe SQL statements and executes them against a database.
 
 ## Features
 
-- **Database-Agnostic**: Works out of the box with standard SQLite databases (`SQLiteAdapter`) and any major database supported by SQLAlchemy (`SQLAlchemyAdapter`), including MS SQL Server, PostgreSQL, MySQL, Oracle, etc.
+- **Database/IDE-Agnostic**: Works out of the box with standard SQLite databases and any major database supported by SQLAlchemy (including MS SQL Server, PostgreSQL, MySQL, Oracle, etc.) by simply providing a connection string. No hardcoded credentials or specific IDE environment setup required.
 - **Model-Agnostic**: Decouples prompt formulation from specific LLM vendors (OpenAI, Gemini, Anthropic, etc.). You simply pass a callback function that handles the model text completion.
 - **Strict Safety Layer**: Enforces query rules (such as read-only SELECT constraints), sanitizes markdown blocks, scrubs comments, and protects against DDL/DML injection keywords (e.g. `DROP`, `DELETE`, `UPDATE`, `ALTER`).
 
@@ -12,10 +12,10 @@ A production-grade, model-agnostic, and database-agnostic Python library that tr
 
 ## Installation
 
-You can install the stable release directly from [PyPI](https://pypi.org/project/model-agnostic-text-to-sql/):
+You can install the stable release directly from [PyPI](https://pypi.org/project/harness-agnostic-text-to-sql/):
 
 ```bash
-pip install model-agnostic-text-to-sql
+pip install harness-agnostic-text-to-sql
 ```
 
 For local development or installing from source:
@@ -33,11 +33,11 @@ pip install -e .
 
 ## Getting Started
 
-### 1. Basic SQLite Example (Model-Agnostic Callback)
+### 1. Basic SQLite Example (Direct DB Connection String)
 
 ```python
 import sqlite3
-from text_to_sql import TextToSQL, SQLiteAdapter
+from text_to_sql import TextToSQL
 
 # Initialize a demo database
 conn = sqlite3.connect("demo.db")
@@ -53,9 +53,8 @@ def gemini_or_openai_callback(prompt: str) -> str:
     # return response.text
     return "SELECT name FROM users WHERE role = 'Admin';"
 
-# 2. Instantiate adapter and query
-adapter = SQLiteAdapter("demo.db")
-translator = TextToSQL(adapter, gemini_or_openai_callback)
+# 2. Instantiate TextToSQL with connection string and query
+translator = TextToSQL(db_uri="sqlite:///demo.db", llm_callback=gemini_or_openai_callback)
 
 result = translator.query("Get the names of all admin users")
 print(result)
@@ -68,47 +67,25 @@ print(result)
 # }
 ```
 
-### 2. Live Azure SQL Server Connection Example (Active Directory/Entra Token)
+### 2. Live Database Connection Example (SQLAlchemy URI)
 
-If you are querying a secure corporate database like Microsoft SQL Server using Entra ID token authentication (e.g., Azure SQL DB), you can pass a configured SQLAlchemy engine:
+You can pass any SQLAlchemy database connection string (e.g., PostgreSQL, MS SQL, MySQL):
 
 ```python
-import struct
-from azure.identity import DefaultAzureCredential
-from sqlalchemy import create_engine
-from text_to_sql import TextToSQL, SQLAlchemyAdapter
+from text_to_sql import TextToSQL
 
-# 1. Retrieve the Entra ID active token
-credential = DefaultAzureCredential()
-token_obj = credential.get_token("https://database.windows.net/.default")
-token_bytes = token_obj.token.encode("utf-16-le")
-
-# 2. Setup your SQL Server connection properties
-driver = "ODBC Driver 17 for SQL Server"
-server = "your-sql-server.database.windows.net,1433"
-database = "your-database-db"
-conn_str = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
-
-# SQL_COPT_SS_ACCESS_TOKEN = 1256 (pyodbc constant for setting the access token)
-SQL_COPT_SS_ACCESS_TOKEN = 1256
-packed_token = struct.pack("=i", len(token_bytes)) + token_bytes
-
-# 3. Create the SQLAlchemy Engine
-engine = create_engine(
-    f"mssql+pyodbc:///?odbc_connect={conn_str}",
-    connect_args={"attrs_before": {SQL_COPT_SS_ACCESS_TOKEN: packed_token}}
-)
-
-# 4. Initialize adapter (target schema 'awo')
-adapter = SQLAlchemyAdapter(engine, schema="awo")
-
-# 5. Define LLM callback
+# 1. Define LLM callback
 def llm_callback(prompt: str) -> str:
-    # Your model call goes here
     return "SELECT TOP 3 * FROM awo.Asset;"
 
-# 6. Execute query
-translator = TextToSQL(adapter, llm_callback)
+# 2. Connect directly via DB URI (e.g. MS SQL Server)
+# Specify target schema using the 'schema' parameter
+translator = TextToSQL(
+    db_uri="mssql+pyodbc:///?odbc_connect=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=testdb;UID=sa;PWD=password;",
+    schema="awo",
+    llm_callback=llm_callback
+)
+
 result = translator.query("Get first 3 assets")
 print(result)
 ```

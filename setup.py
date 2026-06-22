@@ -5,7 +5,7 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
-    name="model-agnostic-text-to-sql",
+    name="harness-agnostic-text-to-sql",
     version="0.1.2",
     packages=find_packages(),
     install_requires=[
@@ -17,7 +17,7 @@ setup(
         ]
     },
     author="Adnan Ahmad",
-    description="A model-agnostic, database-agnostic Text-to-SQL Python library.",
+    description="An IDE/harness-agnostic and database-agnostic Text-to-SQL Python library.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.8",
