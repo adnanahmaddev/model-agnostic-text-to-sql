@@ -133,7 +133,7 @@ if HAS_SQLALCHEMY:
                     packed_token = struct.pack("=i", len(token_bytes)) + token_bytes
                     connect_args["attrs_before"] = {SQL_COPT_SS_ACCESS_TOKEN: packed_token}
                 except ImportError:
-                    raise ImportError("azure-identity package is required for Active Directory Default authentication.")
+                    raise ImportError("azure-identity package is required for Active Directory Default authentication. Please install it with 'pip install harness-agnostic-text-to-sql[azure]'.")
                     
         else:
             # It's a URI. Let's see if it has odbc_connect parameter with Authentication=Active Directory Default
@@ -165,7 +165,7 @@ if HAS_SQLALCHEMY:
                         packed_token = struct.pack("=i", len(token_bytes)) + token_bytes
                         connect_args["attrs_before"] = {SQL_COPT_SS_ACCESS_TOKEN: packed_token}
                     except ImportError:
-                        raise ImportError("azure-identity package is required for Active Directory Default authentication.")
+                        raise ImportError("azure-identity package is required for Active Directory Default authentication. Please install it with 'pip install harness-agnostic-text-to-sql[azure]'.")
                     
                     # Reconstruct query params and URL
                     query_params["odbc_connect"] = [odbc_conn_str.strip(';')]

@@ -15,7 +15,11 @@ A production-grade, IDE/agent-harness agnostic, and database-agnostic Python lib
 You can install the stable release directly from [PyPI](https://pypi.org/project/harness-agnostic-text-to-sql/):
 
 ```bash
+# Standard install (SQLite, standard SQLAlchemy, etc.)
 pip install harness-agnostic-text-to-sql
+
+# Install with Azure Active Directory and pyodbc dependencies
+pip install harness-agnostic-text-to-sql[azure]
 ```
 
 For local development or installing from source:

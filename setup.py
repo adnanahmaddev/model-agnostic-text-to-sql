@@ -6,7 +6,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="harness-agnostic-text-to-sql",
-    version="0.1.5",
+    version="0.1.6",
     packages=find_packages(),
     install_requires=[
         "sqlalchemy>=2.0.0",
@@ -14,6 +14,10 @@ setup(
     extras_require={
         "test": [
             "pytest>=8.0.0",
+        ],
+        "azure": [
+            "azure-identity>=1.12.0",
+            "pyodbc>=5.0.0",
         ]
     },
     author="Adnan Ahmad",
