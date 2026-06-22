@@ -6,7 +6,22 @@ import json
 from text_to_sql.core import TextToSQL
 from text_to_sql.safety import SafetyValidator
 
+def load_env():
+    """Load environment variables from a local .env file in the current directory if present."""
+    env_file = os.path.join(os.getcwd(), ".env")
+    if os.path.isfile(env_file):
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    val = val.strip()
+                    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                        val = val[1:-1]
+                    os.environ[key.strip()] = val
+
 def main():
+    load_env()
     # Define a parent parser for arguments shared by subcommands that need DB access
     db_parser = argparse.ArgumentParser(add_help=False)
     db_parser.add_argument(

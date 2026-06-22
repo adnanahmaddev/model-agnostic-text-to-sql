@@ -87,8 +87,16 @@ translator = TextToSQL(
 )
 
 result = translator.query("Get first 3 assets")
+result = translator.query("Get first 3 assets")
 print(result)
 ```
+
+### 3. Database connection string configuration via CLI or `.env`
+
+For command-line interface (CLI) execution, the connection string can be provided in three ways:
+1. **Explicit command argument**: `--db-uri "your_connection_string"`
+2. **Environment Variable**: `DATABASE_URL` set in your shell environment.
+3. **Local `.env` File**: A `DATABASE_URL` variable set inside a `.env` file in the current working directory. The tool will automatically look for and load a `.env` file when executed.
 
 ---
 
