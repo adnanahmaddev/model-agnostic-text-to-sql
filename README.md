@@ -145,7 +145,7 @@ If you want to commit the skill configuration directly into your project reposit
 2. Download or copy the [SKILL.md](plugins/text-to-sql-plugin/skills/text-to-sql/SKILL.md) file directly into that directory:
    ```bash
    mkdir -p .agents/skills/text-to-sql
-   curl -o .agents/skills/text-to-sql/SKILL.md https://raw.githubusercontent.com/adnanahmaddev/model-agnostic-text-to-sql/main/plugins/text-to-sql-plugin/skills/text-to-sql/SKILL.md
+   curl -o .agents/skills/text-to-sql/SKILL.md https://raw.githubusercontent.com/adnanahmaddev/harness-agnostic-text-to-sql/main/plugins/text-to-sql-plugin/skills/text-to-sql/SKILL.md
    ```
 3. Register it in your repository's local `AGENTS.md` file:
    ```markdown
